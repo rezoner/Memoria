@@ -169,7 +169,7 @@
         }
       });
     },
-    
+  
     save: function() {
       fs.writeFile(this.filePath, _.pack(JSON.stringify(this.tables)), function(err) {
         if(err) throw err;        
