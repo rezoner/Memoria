@@ -49,13 +49,14 @@ Function (flexible querries):
     
 Note that properties have to be accessed using additional array with indexes. It is not really convenient but gives a huge boost to performance.
 
-### Updating *not implemented*:
+### Updating:
 
     db("users").all({ age: 32 }).update({ salary: 1600 });
     
 or
 
-    db("users").all({ age: 32 }).update(function(r, i) {
+    db("users").all({ age: 32 }).update(
+      function(r, i) {
       r[i.salary] *= 2;
     });
     

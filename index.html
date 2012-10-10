@@ -1,4 +1,4 @@
-<script src="memoria.js"></script>
+<script src = "memoria.js"></script>
 
 <script>
 
@@ -8,18 +8,22 @@
   db("users", ["name", "age"]);
   
   var users = db("users");
+  users.insert([
+    {"name": "Vennril", "age": 41 }, 
+    {"name": "andrewjbaker", "age": 15 }, 
+    {"name": "QF-MichaelK", "age": 12 }, 
+    {"name": "tsatse", "age": 9 }, 
+    {"name": "jerev", "age": 65 }, 
+    {"name": "Hinston", "age": 48 }, 
+    {"name": "digitarald", "age": 58 }, 
+    {"name": "aJamD0nut", "age": 12 }, 
+    {"name": "Armen138", "age": 11 }
+  ]);
   
-  users.insert({ "name": "Vennril", "age": 41 });
-  users.insert({ "name": "andrewjbaker", "age": 15 });
-  users.insert({ "name": "QF-MichaelK", "age": 12 });
-  users.insert({ "name": "tsatse", "age": 9 });
-  users.insert({ "name": "jerev", "age": 65 });
-  users.insert({ "name": "Hinston", "age": 48 });
-  users.insert({ "name": "digitarald", "age": 58 });
-  users.insert({ "name": "aJamD0nut", "age": 12 });
-  users.insert({ "name": "Armen138", "age": 11 });
-  
-  
-  console.log(users, users.all().result);
+  users.all(function(r, i) { return r[i.age] > 16; }).update(function(r, i) {
+    r[i.age] = 1337;
+  });
 
-</script>
+  console.log(JSON.stringify(users.items));
+
+</script >

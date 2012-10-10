@@ -1,4 +1,4 @@
-Memoria = (function() {
+(function() {
 
   var _ = {
 
@@ -35,7 +35,7 @@ Memoria = (function() {
     inverse: function(keys) {
       var result = {};
       for(var i = 0; i < keys.length; i++) {
-        result[i] = keys[i];
+        result[keys[i]] = i;
       }
 
       return result
@@ -74,10 +74,12 @@ Memoria = (function() {
     },
 
     setupTable: function(name, fields) {
+      fields.unshift("id");
+
       this.tables[name] = {
         autoincrement: 1,
         structure: fields,
-        structureIndexing: _.inverse(fields),
+        keyToIndex: _.inverse(fields),
         items: []
       }
     }
@@ -108,11 +110,20 @@ Memoria = (function() {
     },
 
     insert: function(data) {
-      var item = _.fold(data, this.structure);
-      var id = this.autoincrement++;
-      item.unshift(id);
-      this.items.push(item);
-      this.indexing[id] = item;
+      var items = data;
+
+      if(!(data instanceof Array)) {
+        items = [data];
+      }
+
+      for(var i = 0; i < items.length; i++) {
+        var id = this.autoincrement++;
+        items[i].id = id;
+        var item = _.fold(items[i], this.structure);
+
+        this.items.push(item);
+        this.indexing[id] = item;
+      }
     }
   };
 
@@ -126,19 +137,31 @@ Memoria = (function() {
       if(!query || query instanceof Function) {
 
         for(var i = 0, len = this.table.items.length; i < len; i++) {
-          if(!query || this.query(this.table.items[i], this.table.structureIndexing)) {
+          if(!query || query(this.table.items[i], this.table.keyToIndex)) {
             this.items.push(this.table.items[i]);
             if(this.single) {
               break;
             }
           }
         }
+      } else if(query instanceof Object) {
+        var add = true;
+        for(var property in query) {
+          var keyIndex = this.table.keyToIndex[property];
+          if(this.table.items[i][keyIndex] !== query[property]) {
+            add = false;
+            break;
+          }
+        }
+
+        if(add) {
+          this.items.push(this.table.items[i]);
+        }
       } else {
         this.items = [this.indexing[query]];
       }
 
       if(this.items.length) {
-        console.log(this.items);
         if(this.single) {
           this.result = _.unfold(this.items[0], this.table.structure);
         } else {
@@ -153,11 +176,13 @@ Memoria = (function() {
 
   _.extend(Query.prototype, {
 
-    update: function(how) {
-      if(query instanceof Function) {
-        how(this.item);
-      } else {
-        this.result
+    update: function(what) {
+      for(var i = 0; i < this.items.length; i++) {
+        if(what instanceof Function) {
+          what(this.items[i], this.table.keyToIndex);
+        } else {
+          _.extend(this.items[i], what);
+        }
       }
     }
 
