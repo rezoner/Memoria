@@ -10,6 +10,10 @@ Memoria is designed especially for browser based games without much of relationa
 Everything happens in memory, but the data is saved to a file.
 It is meant to be used with applications that doesn't share database with other instances.
 
+### Install:
+
+    npm install memoria
+
 ### Create database:
 
 Looks for file `test.memoria` to restore data.
