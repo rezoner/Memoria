@@ -50,7 +50,7 @@ Function (flexible querries):
     
 Note that properties have to be accessed using additional array with indexes. It is not really convenient but gives a huge boost to performance.
 
-### Updating:
+### Updating *not implemented*:
 
     db("users").all({ age: 32 }).update({ salary: 1600 });
     
@@ -62,6 +62,6 @@ or
     
     
     
-### Removing:
+### Removing *not implemented*:
 
     db("users").all(selector).remove();
