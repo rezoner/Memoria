@@ -202,11 +202,13 @@
     },
 
     insert: function(data) {
-      var items = data;
+      var items = arguments;
 
+/*
       if(!(data instanceof Array)) {
         items = [data];
       }
+*/
 
       for(var i = 0; i < items.length; i++) {
         var id = this.autoincrement++;

@@ -32,6 +32,10 @@ It is possible to check if file was found using:
 ### Insertion:
 
     db("users").insert({ name: "Vennril", age: 15, salary: 1000 });
+
+or
+
+    db("users").insert({ ... }, { ... }, { ... });
     
 ### Querrying:
 
