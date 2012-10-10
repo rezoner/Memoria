@@ -1,0 +1,103 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'publish',
+1 verbose cli   './npm/' ]
+2 info using npm@1.1.62
+3 info using node@v0.8.11
+4 verbose publish [ './npm/' ]
+5 verbose read json /home/rezoner/Workshop/memoria/npm/package.json
+6 verbose cache add [ './npm/', null ]
+7 silly cache add name=undefined spec="./npm/" args=["./npm/",null]
+8 verbose parsed url { pathname: './npm/', path: './npm/', href: './npm/' }
+9 silly lockFile 2bf482c2-npm ./npm/
+10 verbose lock ./npm/ /home/rezoner/.npm/2bf482c2-npm.lock
+11 verbose read json npm/package.json
+12 verbose tar pack [ '/home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz',
+12 verbose tar pack   './npm/' ]
+13 verbose tarball /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz
+14 verbose folder ./npm/
+15 info prepublish memoria@0.0.1
+16 silly lockFile 4b7bde6b-62731-0-2866159579716623-tmp-tgz /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz
+17 verbose lock /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz /home/rezoner/.npm/4b7bde6b-62731-0-2866159579716623-tmp-tgz.lock
+18 silly lockFile 4b7bde6b-62731-0-2866159579716623-tmp-tgz /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz
+19 verbose tar unpack /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/tmp.tgz
+20 silly lockFile 9ba2d632-62731-0-2866159579716623-package /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package
+21 verbose lock /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package /home/rezoner/.npm/9ba2d632-62731-0-2866159579716623-package.lock
+22 silly gunzTarPerm modes [ '755', '644' ]
+23 silly gunzTarPerm extractEntry package.json
+24 silly gunzTarPerm modified mode [ 'package.json', 436, 420 ]
+25 silly gunzTarPerm extractEntry README.md
+26 silly gunzTarPerm modified mode [ 'README.md', 436, 420 ]
+27 silly gunzTarPerm extractEntry memoria.js
+28 silly gunzTarPerm modified mode [ 'memoria.js', 436, 420 ]
+29 verbose read json /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package/package.json
+30 silly lockFile 9ba2d632-62731-0-2866159579716623-package /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package
+31 verbose from cache /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package/package.json
+32 verbose tar pack [ '/home/rezoner/.npm/memoria/0.0.1/package.tgz',
+32 verbose tar pack   '/home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package' ]
+33 verbose tarball /home/rezoner/.npm/memoria/0.0.1/package.tgz
+34 verbose folder /home/rezoner/tmp/npm-30475/1349904862731-0.2866159579716623/package
+35 silly lockFile 633b93a6-er-npm-memoria-0-0-1-package-tgz /home/rezoner/.npm/memoria/0.0.1/package.tgz
+36 verbose lock /home/rezoner/.npm/memoria/0.0.1/package.tgz /home/rezoner/.npm/633b93a6-er-npm-memoria-0-0-1-package-tgz.lock
+37 silly lockFile 633b93a6-er-npm-memoria-0-0-1-package-tgz /home/rezoner/.npm/memoria/0.0.1/package.tgz
+38 silly lockFile c6fa12cb-ezoner-npm-memoria-0-0-1-package /home/rezoner/.npm/memoria/0.0.1/package
+39 verbose lock /home/rezoner/.npm/memoria/0.0.1/package /home/rezoner/.npm/c6fa12cb-ezoner-npm-memoria-0-0-1-package.lock
+40 silly lockFile c6fa12cb-ezoner-npm-memoria-0-0-1-package /home/rezoner/.npm/memoria/0.0.1/package
+41 verbose tar unpack /home/rezoner/.npm/memoria/0.0.1/package.tgz
+42 silly lockFile c6fa12cb-ezoner-npm-memoria-0-0-1-package /home/rezoner/.npm/memoria/0.0.1/package
+43 verbose lock /home/rezoner/.npm/memoria/0.0.1/package /home/rezoner/.npm/c6fa12cb-ezoner-npm-memoria-0-0-1-package.lock
+44 silly gunzTarPerm modes [ '755', '644' ]
+45 silly gunzTarPerm extractEntry package.json
+46 silly gunzTarPerm extractEntry README.md
+47 silly gunzTarPerm extractEntry memoria.js
+48 verbose read json /home/rezoner/.npm/memoria/0.0.1/package/package.json
+49 silly lockFile c6fa12cb-ezoner-npm-memoria-0-0-1-package /home/rezoner/.npm/memoria/0.0.1/package
+50 silly shasum updated bytes 2337
+51 info shasum 12c6175b9d98f5e5bf22c5da57930929e6215242
+51 info shasum /home/rezoner/.npm/memoria/0.0.1/package.tgz
+52 verbose from cache /home/rezoner/.npm/memoria/0.0.1/package/package.json
+53 verbose chmod /home/rezoner/.npm/memoria/0.0.1/package.tgz 644
+54 verbose chown /home/rezoner/.npm/memoria/0.0.1/package.tgz [ 1000, 1000 ]
+55 silly lockFile 2bf482c2-npm ./npm/
+56 silly publish { author:
+56 silly publish    { name: 'Rezoner',
+56 silly publish      email: 'rezoner1337@gmail.com',
+56 silly publish      url: 'http://rezoner.net' },
+56 silly publish   name: 'memoria',
+56 silly publish   description: 'a simple javascript database for browser based games',
+56 silly publish   version: '0.0.1',
+56 silly publish   repository: { type: 'git', url: 'git://github.com/rezoner/Memoria.git' },
+56 silly publish   bin: { wscat: './bin/wscat' },
+56 silly publish   scripts: {},
+56 silly publish   engines: { node: '>=0.4.0' },
+56 silly publish   keywords: [ 'database', 'nosql' ],
+56 silly publish   dependencies: {},
+56 silly publish   devDependencies: {},
+56 silly publish   license: 'MIT',
+56 silly publish   readme: 'Memoria\n=======\n\nSimple database for node.js\n---------------------------\n\nIt is not working yet.\n\nMemoria is designed especially for browser based games without much of relational data.\nEverything happens in memory, but the data is saved to a file.\nIt is meant to be used with applications that doesn\'t share database with other instances.\n\n### Create database:\n\nThis creates a file named `test.memoria` to store the data.\n\n    var db = Memoria("test");\n\n### Create table:\n\n    db("users", ["name", "age", "salary"]);\n\n### Insertion:\n\n    db("users").insert({ name: "Vennril", age: 15, salary: 1000 });\n    \n### Querrying:\n\n    db("users").one(selector).result;\n    db("users").all(selector).result;\n\n### Selectors:\n\nNumber (returns entry by ID):\n\n    db("users").one(32).result;\n\nObject (equal check):\n\n    db("users").all({ age: 16 }).result;\n    \nFunction (flexible querries):\n\n    /* get all items matching age > 32 */\n\n    db("users").all(function(r, i) {\n      return r[i.age] > 32;\n    }).result; \n    \nNote that properties have to be accessed using additional array with indexes. It is not really convenient but gives a huge boost to performance.\n\n### Updating:\n\n    db("users").all({ age: 32 }).update({ salary: 1600 });\n    \nor\n\n    db("users").all({ age: 32 }).update(\n      function(r, i) {\n      r[i.salary] *= 2;\n    });\n    \n    \n    \n### Removing *not implemented*:\n\n    db("users").all(selector).remove();\n',
+56 silly publish   _id: 'memoria@0.0.1',
+56 silly publish   dist: { shasum: '12c6175b9d98f5e5bf22c5da57930929e6215242' } }
+57 verbose url raw memoria
+58 verbose url resolving [ 'https://registry.npmjs.org/', './memoria' ]
+59 verbose url resolved https://registry.npmjs.org/memoria
+60 info trying registry request attempt 1 at 23:34:22
+61 http PUT https://registry.npmjs.org/memoria
+62 http 409 https://registry.npmjs.org/memoria
+63 verbose url raw memoria
+64 verbose url resolving [ 'https://registry.npmjs.org/', './memoria' ]
+65 verbose url resolved https://registry.npmjs.org/memoria
+66 info trying registry request attempt 1 at 23:34:24
+67 http GET https://registry.npmjs.org/memoria
+68 http 200 https://registry.npmjs.org/memoria
+69 error publish fail Cannot publish over existing version.
+69 error publish fail Bump the 'version' field, set the --force flag, or
+69 error publish fail     npm unpublish 'memoria@0.0.1'
+69 error publish fail and try again
+70 error System Linux 3.2.0-29-generic
+71 error command "/usr/local/bin/node" "/usr/local/bin/npm" "publish" "./npm/"
+72 error cwd /home/rezoner/Workshop/memoria
+73 error node -v v0.8.11
+74 error npm -v 1.1.62
+75 error code EPUBLISHCONFLICT
+76 verbose exit [ 1, true ]

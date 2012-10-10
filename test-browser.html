@@ -1,0 +1,29 @@
+<script src = "memoria.js"></script>
+
+<script>
+
+
+  var db = Memoria("test");
+  
+  db("users", ["name", "age"]);
+  
+  var users = db("users");
+  users.insert([
+    {"name": "Vennril", "age": 41 }, 
+    {"name": "andrewjbaker", "age": 15 }, 
+    {"name": "QF-MichaelK", "age": 12 }, 
+    {"name": "tsatse", "age": 9 }, 
+    {"name": "jerev", "age": 65 }, 
+    {"name": "Hinston", "age": 48 }, 
+    {"name": "digitarald", "age": 58 }, 
+    {"name": "aJamD0nut", "age": 12 }, 
+    {"name": "Armen138", "age": 11 }
+  ]);
+  
+  users.all(function(r, i) { return r[i.age] > 16; }).update(function(r, i) {
+    r[i.age] = 1337;
+  });
+
+  console.log(JSON.stringify(users.items));
+
+</script >

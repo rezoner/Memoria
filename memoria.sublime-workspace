@@ -4,16 +4,32 @@
 		"selected_items":
 		[
 			[
+				"save",
+				"saveInterval"
+			],
+			[
+				"ke",
+				"keyToIndex"
+			],
+			[
+				"pro",
+				"property"
+			],
+			[
+				"key",
+				"keyIndex"
+			],
+			[
+				"str",
+				"structureIndexing"
+			],
+			[
 				"data",
 				"databaseName"
 			],
 			[
 				"dta",
 				"databases"
-			],
-			[
-				"pro",
-				"prototype"
 			],
 			[
 				"pla",
@@ -99,15 +115,42 @@
 			"file": "index.html",
 			"settings":
 			{
-				"buffer_size": 663,
+				"buffer_size": 680,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "memoria.js",
+			"file": "README.md",
 			"settings":
 			{
-				"buffer_size": 3435,
+				"buffer_size": 1423,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "npm/package.json",
+			"settings":
+			{
+				"buffer_size": 523,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "(function() {\n\n  var BROWSER = typeof window !== 'undefined';\n\n  if(!BROWSER) {\n    var fs = require('fs');\n  }\n\n  var _ = {\n\n    extend: function() {\n      for(var i = 1; i < arguments.length; i++) {\n        for(var j in arguments[i]) {\n          arguments[0][j] = arguments[i][j];\n        }\n      }\n    },\n\n    /* fold object using keys */\n\n    fold: function(data, keys) {\n      var result = [];\n      for(var i = 0; i < keys.length; i++) {\n        result[i] = data[keys[i]];\n      }\n\n      return result;\n    },\n\n    /* unfold object using keys */\n\n    unfold: function(data, keys) {\n      var result = {};\n      for(var i = 0; i < keys.length; i++) {\n        result[keys[i]] = data[i];\n      }\n\n      return result\n    },\n\n    inverse: function(keys) {\n      var result = {};\n      for(var i = 0; i < keys.length; i++) {\n        result[keys[i]] = i;\n      }\n\n      return result\n    },\n\n    compress: function (uncompressed) {\n        \"use strict\";\n        // Build the dictionary.\n        var i,\n            dictionary = {},\n            c,\n            wc,\n            w = \"\",\n            result = [],\n            dictSize = 256;\n        for (i = 0; i < 256; i += 1) {\n            dictionary[String.fromCharCode(i)] = i;\n        }\n \n        for (i = 0; i < uncompressed.length; i += 1) {\n            c = uncompressed.charAt(i);\n            wc = w + c;\n            if (dictionary[wc]) {\n                w = wc;\n            } else {\n                result.push(dictionary[w]);\n                // Add wc to the dictionary.\n                dictionary[wc] = dictSize++;\n                w = String(c);\n            }\n        }\n \n        // Output the code for w.\n        if (w !== \"\") {\n            result.push(dictionary[w]);\n        }\n        return result;\n    },\n \n \n    decompress: function (compressed) {\n        \"use strict\";\n        // Build the dictionary.\n        var i,\n            dictionary = [],\n            w,\n            result,\n            k,\n            entry = \"\",\n            dictSize = 256;\n        for (i = 0; i < 256; i += 1) {\n            dictionary[i] = String.fromCharCode(i);\n        }\n \n        w = String.fromCharCode(compressed[0]);\n        result = w;\n        for (i = 1; i < compressed.length; i += 1) {\n            k = compressed[i];\n            if (dictionary[k]) {\n                entry = dictionary[k];\n            } else {\n                if (k === dictSize) {\n                    entry = w + w.charAt(0);\n                } else {\n                    return null;\n                }\n            }\n \n            result += entry;\n \n            // Add w+entry[0] to the dictionary.\n            dictionary[dictSize++] = w + entry.charAt(0);\n \n            w = entry;\n        }\n        return result;\n    },\n    \n    encode: function(s) {\n      var dict = {};\n      var data = (s + \"\").split(\"\");\n      var out = [];\n      var currChar;\n      var phrase = data[0];\n      var code = 256;\n      for (var i=1; i<data.length; i++) {\n          currChar=data[i];\n          if (dict[phrase + currChar] != null) {\n              phrase += currChar;\n          }\n          else {\n              out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));\n              dict[phrase + currChar] = code;\n              code++;\n              phrase=currChar;\n          }\n      }\n      out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));\n      for (var i=0; i<out.length; i++) {\n          out[i] = String.fromCharCode(out[i]);\n      }\n      return out.join(\"\");\n    },\n    \n    decode: function(s) {\n        var dict = {};\n        var data = (s + \"\").split(\"\");\n        var currChar = data[0];\n        var oldPhrase = currChar;\n        var out = [currChar];\n        var code = 256;\n        var phrase;\n        for (var i=1; i<data.length; i++) {\n            var currCode = data[i].charCodeAt(0);\n            if (currCode < 256) {\n                phrase = data[i];\n            }\n            else {\n               phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);\n            }\n            out.push(phrase);\n            currChar = phrase.charAt(0);\n            dict[code] = oldPhrase + currChar;\n            code++;\n            oldPhrase = phrase;\n        }\n        return out.join(\"\");\n    }    \n\n  };\n\n\n  var databases = {};\n\n  var Memoria = function(name, callback) {\n      if(!databases[name]) {\n        databases[name] = new Database(name, callback);\n      }\n\n      var database = databases[name];\n\n      var wrapper = (function(database) {\n        return function(name, args) {\n          if(typeof args !== \"undefined\") {\n            return database.setupTable(name, args);\n          } else {\n            return database.table(name);\n          }\n        };\n      })(database);\n\n      wrapper.exists = database.exists;\n\n      return wrapper;\n\n    };\n\n  Memoria.databases = databases;\n  Memoria.saveInterval = 1000;\n\n  var Database = function(name, callback) {\n      this.tables = {};\n      var self = this;\n      this.filePath = name + \".memoria\";\n\n      if(!BROWSER) {\n        if(this.exists = fs.existsSync(this.filePath)) {\n          this.open();\n        }\n\n        setInterval(function() {\n          self.save();\n        }, Memoria.saveInterval);\n      }\n    };\n\n  Database.prototype = {\n\n    open: function() {\n      fs.readFile(this.filePath, function(err, data) {\n        if(err) {\n          throw err;\n        } else {\n          this.tables = JSON.parse(data);\n        }        \n      });\n    },\n\n    table: function(name) {\n      return new Table(this, name);\n    },\n\n    setupTable: function(name, fields) {\n      fields.unshift(\"id\");\n\n      this.tables[name] = {\n        autoincrement: 1,\n        structure: fields,\n        keyToIndex: _.inverse(fields),\n        items: []\n      }\n    },\n\n    save: function() {\n      fs.writeFile(this.filePath, JSON.stringify(this.tables), function(err) {\n        if(err) throw err;\n        console.log('It\\'s saved!');\n      });\n    }\n  };\n\n  var Table = function(db, name) {\n      this.db = db;\n      this.name = name;\n      this.indexing = {};\n\n      if(this.db) {\n        _.extend(this, db.tables[name]);\n      }\n\n    };\n\n  Table.prototype = {\n    one: function(query) {\n      return new Query(true, this, query);\n    },\n\n    all: function(query) {\n      return new Query(false, this, query);\n    },\n\n    false: function(query) {\n      return new Query(true, this, query);\n    },\n\n    insert: function(data) {\n      var items = data;\n\n      if(!(data instanceof Array)) {\n        items = [data];\n      }\n\n      for(var i = 0; i < items.length; i++) {\n        var id = this.autoincrement++;\n        items[i].id = id;\n        var item = _.fold(items[i], this.structure);\n\n        this.items.push(item);\n        this.indexing[id] = item;\n      }\n    }\n  };\n\n  var Query = function(single, table, query) {\n      this.single = single\n\n      this.table = table;\n      this.result = null;\n      this.items = [];\n\n      if(!query || query instanceof Function) {\n\n        for(var i = 0, len = this.table.items.length; i < len; i++) {\n          if(!query || query(this.table.items[i], this.table.keyToIndex)) {\n            this.items.push(this.table.items[i]);\n            if(this.single) {\n              break;\n            }\n          }\n        }\n      } else if(query instanceof Object) {\n        var add = true;\n        for(var property in query) {\n          var keyIndex = this.table.keyToIndex[property];\n          if(this.table.items[i][keyIndex] !== query[property]) {\n            add = false;\n            break;\n          }\n        }\n\n        if(add) {\n          this.items.push(this.table.items[i]);\n        }\n      } else {\n        this.items = [this.indexing[query]];\n      }\n\n      if(this.items.length) {\n        if(this.single) {\n          this.result = _.unfold(this.items[0], this.table.structure);\n        } else {\n          this.result = [];\n          for(var i = 0; i < this.items.length; i++) {\n            this.result.push(_.unfold(this.items[i], this.table.structure));\n          }\n        }\n\n      }\n    };\n\n  _.extend(Query.prototype, {\n\n    update: function(what) {\n      for(var i = 0; i < this.items.length; i++) {\n        if(what instanceof Function) {\n          what(this.items[i], this.table.keyToIndex);\n        } else {\n          _.extend(this.items[i], what);\n        }\n      }\n    }\n\n  });\n\n  if(BROWSER) {\n    window.Memoria = Memoria;\n  } else {\n    module.exports = Memoria;\n  }\n\n})();",
+			"file": "memoria.js",
+			"file_size": 5060,
+			"file_write_time": 1349906683000000,
+			"settings":
+			{
+				"buffer_size": 8415,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test.js",
+			"settings":
+			{
+				"buffer_size": 145,
 				"line_ending": "Unix"
 			}
 		}
@@ -115,9 +158,29 @@
 	"build_system": "",
 	"command_palette":
 	{
-		"height": 96.0,
+		"height": 180.0,
 		"selected_items":
 		[
+			[
+				"space",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"spaces",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"markd",
+				"Set Syntax: Markdown"
+			],
+			[
+				"mar",
+				"Set Syntax: MultiMarkdown"
+			],
+			[
+				"mark",
+				"Set Syntax: Markdown"
+			],
 			[
 				"javasc",
 				"Set Syntax: JavaScript"
@@ -164,6 +227,8 @@
 	},
 	"file_history":
 	[
+		"/home/rezoner/Workshop/memoria/memoria.sublime-project",
+		"/home/rezoner/Workshop/memoria/package.json",
 		"/home/rezoner/Workshop/tactics/client/index.html",
 		"/home/rezoner/Workshop/tactics/tactics.sublime-workspace",
 		"/home/rezoner/Workshop/tactics/tactics.sublime-project",
@@ -256,6 +321,15 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"\"age",
+			" ",
+			"users.insert(",
+			"instanceof",
+			"console",
+			"inverse",
+			"structureIndexing",
+			"}\n",
+			"structureIndexing",
 			"indexes",
 			"autoin",
 			"autoince",
@@ -395,7 +469,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 3,
 			"sheets":
 			[
 				{
@@ -403,20 +477,22 @@
 					"file": "index.html",
 					"settings":
 					{
-						"buffer_size": 663,
+						"buffer_size": 680,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								110,
-								110
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -426,18 +502,74 @@
 				},
 				{
 					"buffer": 1,
-					"file": "memoria.js",
+					"file": "README.md",
 					"settings":
 					{
-						"buffer_size": 3435,
+						"buffer_size": 1423,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1617,
-								1617
+								1423,
+								1423
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Markdown/Markdown.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "npm/package.json",
+					"settings":
+					{
+						"buffer_size": 523,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								347,
+								347
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "memoria.js",
+					"settings":
+					{
+						"buffer_size": 8415,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4239,
+								4239
 							]
 						],
 						"settings":
@@ -447,7 +579,33 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1085.0,
+						"translation.y": 2333.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "test.js",
+					"settings":
+					{
+						"buffer_size": 145,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								98,
+								98
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -496,6 +654,14 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"pack",
+				"/home/rezoner/Workshop/memoria/npm/package.json"
+			],
+			[
+				"memoria",
+				"/home/rezoner/Workshop/memoria/README.md"
+			],
 			[
 				"uti",
 				"server/commons/utils.js"
@@ -913,7 +1079,23 @@
 		"selected_items":
 		[
 			[
+				"snake",
+				"/home/rezoner/Workshop/snake/snake.sublime-project"
+			],
+			[
+				"space",
+				"/home/rezoner/Workshop/space/www/space.sublime-project"
+			],
+			[
+				"ta",
+				"/home/rezoner/Workshop/tactics/tactics.sublime-project"
+			],
+			[
 				"tac",
+				"/home/rezoner/Workshop/tactics/tactics.sublime-project"
+			],
+			[
+				"tact",
 				"/home/rezoner/Workshop/tactics/tactics.sublime-project"
 			],
 			[
@@ -925,16 +1107,8 @@
 				"/home/rezoner/Workshop/farm/www/game/farm.sublime-project"
 			],
 			[
-				"snake",
-				"/home/rezoner/Workshop/snake/snake.sublime-project"
-			],
-			[
 				"stri",
 				"/home/rezoner/Workshop/stripes/www/stripes.sublime-project"
-			],
-			[
-				"space",
-				"/home/rezoner/Workshop/space/www/space.sublime-project"
 			],
 			[
 				"snale",

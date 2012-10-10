@@ -1,5 +1,11 @@
 (function() {
 
+  var BROWSER = typeof window !== 'undefined';
+
+  if(!BROWSER) {
+    var fs = require('fs');
+  }
+
   var _ = {
 
     extend: function() {
@@ -39,18 +45,70 @@
       }
 
       return result
+    },
+
+    pack: function(s) {
+      var dict = {};
+      var data = (s + "").split("");
+      var out = [];
+      var currChar;
+      var phrase = data[0];
+      var code = 256;
+      for(var i = 1; i < data.length; i++) {
+        currChar = data[i];
+        if(dict[phrase + currChar] != null) {
+          phrase += currChar;
+        } else {
+          out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+          dict[phrase + currChar] = code;
+          code++;
+          phrase = currChar;
+        }
+      }
+      out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+      for(var i = 0; i < out.length; i++) {
+        out[i] = String.fromCharCode(out[i]);
+      }
+      return out.join("");
+    },
+
+    unpack: function(s) {
+      var dict = {};
+      var data = (s + "").split("");
+      var currChar = data[0];
+      var oldPhrase = currChar;
+      var out = [currChar];
+      var code = 256;
+      var phrase;
+      for(var i = 1; i < data.length; i++) {
+        var currCode = data[i].charCodeAt(0);
+        if(currCode < 256) {
+          phrase = data[i];
+        } else {
+          phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
+        }
+        out.push(phrase);
+        currChar = phrase.charAt(0);
+        dict[code] = oldPhrase + currChar;
+        code++;
+        oldPhrase = phrase;
+      }
+      return out.join("");
     }
 
   };
 
+
   var databases = {};
 
-  var Memoria = function(name) {
+  var Memoria = function(name, callback) {
       if(!databases[name]) {
-        databases[name] = new Database(name);
+        databases[name] = new Database(name, callback);
       }
 
-      return(function(database) {
+      var database = databases[name];
+
+      var wrapper = (function(database) {
         return function(name, args) {
           if(typeof args !== "undefined") {
             return database.setupTable(name, args);
@@ -58,17 +116,35 @@
             return database.table(name);
           }
         };
-      })(databases[name]);
+      })(database);
+
+      wrapper.exists = database.exists;
+
+      return wrapper;
 
     };
 
-  Memoria.databses = databases;
+  Memoria.databases = databases;
+  Memoria.saveInterval = 1000;
 
-  var Database = function(name) {
+  var Database = function(name, callback) {
       this.tables = {};
+      var self = this;
+      this.filePath = name + ".memoria";
+
+      if(!BROWSER) {
+        if(this.exists = fs.existsSync(this.filePath)) {
+          this.open();
+        }
+
+        setInterval(function() {
+          self.save();
+        }, Memoria.saveInterval);
+      }
     };
 
   Database.prototype = {
+
     table: function(name) {
       return new Table(this, name);
     },
@@ -82,6 +158,22 @@
         keyToIndex: _.inverse(fields),
         items: []
       }
+    },
+
+    open: function() {
+      fs.readFile(this.filePath, function(err, data) {
+        if(err) {
+          throw err;
+        } else {
+          this.tables = JSON.parse(_.unpack(data));
+        }
+      });
+    },
+    
+    save: function() {
+      fs.writeFile(this.filePath, _.pack(JSON.stringify(this.tables)), function(err) {
+        if(err) throw err;        
+      });
     }
   };
 
@@ -188,11 +280,10 @@
 
   });
 
-  if(typeof window === 'undefined') {
-    exports = Memoria;
-  } else {
+  if(BROWSER) {
     window.Memoria = Memoria;
+  } else {
+    module.exports = Memoria;
   }
-
 
 })();

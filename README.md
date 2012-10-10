@@ -4,7 +4,7 @@ Memoria
 Simple database for node.js
 ---------------------------
 
-It is not working yet.
+The library is in early development - some features are not implemented yet - but these are marked.
 
 Memoria is designed especially for browser based games without much of relational data.
 Everything happens in memory, but the data is saved to a file.
@@ -12,9 +12,18 @@ It is meant to be used with applications that doesn't share database with other 
 
 ### Create database:
 
-This creates a file named `test.memoria` to store the data.
+Looks for file `test.memoria` to restore data.
+If file doesn't exists it will be created.
 
     var db = Memoria("test");
+
+It is possible to check if file was found using:
+
+    if(db.exists) {
+      
+      /* some creational functions */
+
+    }
 
 ### Create table:
 
