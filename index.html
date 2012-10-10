@@ -1,0 +1,19 @@
+<script src="memoria.js"></script>
+
+<script>
+
+
+  var db = Memoria("test");
+  
+  db("users", ["name", "age"]);
+  
+  var users = db("users");
+  
+  users.insert({
+    "name": "Marian",
+    "age": 32
+  });
+  
+  console.log(users, users.one(1));
+
+</script>
