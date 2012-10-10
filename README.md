@@ -36,11 +36,11 @@ Number (returns entry by ID):
 
     db("users").one(32).result;
 
-Object
+Object (equal check):
 
     db("users").all({ age: 16 }).result;
     
-Function (adds item to resultset if it returns true)
+Function (flexible querries):
 
     /* get all items matching age > 32 */
 
