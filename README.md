@@ -6,7 +6,7 @@ It is not working yet.
 Memoria is a library which is meant to be used as a temporary database. 
 Designed especially for browser based games to quickly store things like users.
 It lives in memory and is a wrapper for an array, not a real database.
-Tho perfect for an applications without many relations data where there is only one process using a database.
+Tho perfect for an applications without many relational data where there is only one process using a database.
 
 Native database for javascript
 ---------------------------
