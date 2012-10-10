@@ -1,15 +1,14 @@
 Memoria
 =======
 
+Simple database for node.js
+---------------------------
+
 It is not working yet.
 
-Memoria is a library which is meant to be used as a temporary database. 
-Designed especially for browser based games to quickly store things like users.
-It lives in memory and is a wrapper for an array, not a real database.
-Tho perfect for applications without many relational data.
-
-Native database for javascript
----------------------------
+Memoria is designed especially for browser based games without much of relational data.
+Everything happens in memory, but the data is saved to a file.
+It is meant to be used with applications that doesn't share database with other instances.
 
 ### Create database:
 

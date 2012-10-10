@@ -78,7 +78,7 @@ Memoria = (function() {
         autoincrement: 1,
         structure: fields,
         structureIndexing: _.inverse(fields),
-        items: [ ]
+        items: []
       }
     }
   };
@@ -86,7 +86,7 @@ Memoria = (function() {
   var Table = function(db, name) {
       this.db = db;
       this.name = name;
-      this.indexing = { };
+      this.indexing = {};
 
       if(this.db) {
         _.extend(this, db.tables[name]);
@@ -163,6 +163,11 @@ Memoria = (function() {
 
   });
 
-  return Memoria;
+  if(typeof window === 'undefined') {
+    exports = Memoria;
+  } else {
+    window.Memoria = Memoria;
+  }
+
 
 })();
