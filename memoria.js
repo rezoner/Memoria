@@ -10,8 +10,6 @@ Memoria = (function() {
       }
     },
 
-
-
     /* fold object using keys */
 
     fold: function(data, keys) {
@@ -34,7 +32,7 @@ Memoria = (function() {
       return result
     },
 
-    indexes: function(keys) {
+    inverse: function(keys) {
       var result = {};
       for(var i = 0; i < keys.length; i++) {
         result[i] = keys[i];
@@ -79,8 +77,8 @@ Memoria = (function() {
       this.tables[name] = {
         autoincrement: 1,
         structure: fields,
-        indexes: _.indexes(fields),
-        items: {}
+        structureIndexing: _.inverse(fields),
+        items: [ ]
       }
     }
   };
@@ -88,6 +86,7 @@ Memoria = (function() {
   var Table = function(db, name) {
       this.db = db;
       this.name = name;
+      this.indexing = { };
 
       if(this.db) {
         _.extend(this, db.tables[name]);
@@ -102,14 +101,18 @@ Memoria = (function() {
 
     all: function(query) {
       return new Query(false, this, query);
-    },    
+    },
 
     false: function(query) {
       return new Query(true, this, query);
     },
 
     insert: function(data) {
-      this.items[this.autoincrement++] = _.fold(data, this.structure);
+      var item = _.fold(data, this.structure);
+      var id = this.autoincrement++;
+      item.unshift(id);
+      this.items.push(item);
+      this.indexing[id] = item;
     }
   };
 
@@ -120,11 +123,10 @@ Memoria = (function() {
       this.result = null;
       this.items = [];
 
+      if(!query || query instanceof Function) {
 
-
-      if(query instanceof Function) {
         for(var i = 0, len = this.table.items.length; i < len; i++) {
-          if(this.query(this.table.items[i], this.table.indexes)) {
+          if(!query || this.query(this.table.items[i], this.table.structureIndexing)) {
             this.items.push(this.table.items[i]);
             if(this.single) {
               break;
@@ -132,16 +134,20 @@ Memoria = (function() {
           }
         }
       } else {
-        this.items = [this.table.items[query]];
+        this.items = [this.indexing[query]];
       }
 
-      if(this.items) {
+      if(this.items.length) {
+        console.log(this.items);
         if(this.single) {
           this.result = _.unfold(this.items[0], this.table.structure);
         } else {
-
+          this.result = [];
+          for(var i = 0; i < this.items.length; i++) {
+            this.result.push(_.unfold(this.items[i], this.table.structure));
+          }
         }
-        
+
       }
     };
 
