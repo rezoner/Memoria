@@ -128,7 +128,9 @@
   Memoria.saveInterval = 1000;
 
   var Database = function(name, callback) {
-      this.tables = {};
+      this.data = { };
+      this.tables = { };
+
       var self = this;
       this.filePath = name + ".memoria";
 
@@ -146,13 +148,16 @@
   Database.prototype = {
 
     table: function(name) {
-      return new Table(this, name);
+      if(!this.tables[name]) {
+        this.tables[name] = new Table(this, name);
+      }
+      return this.tables[name];
     },
 
     setupTable: function(name, fields) {
       fields.unshift("id");
 
-      this.tables[name] = {
+      this.data[name] = {
         autoincrement: 1,
         structure: fields,
         keyToIndex: _.inverse(fields),
@@ -161,18 +166,26 @@
     },
 
     open: function() {
-      fs.readFile(this.filePath, function(err, data) {
+      var data = fs.readFileSync(this.filePath);
+      this.data = JSON.parse(data);
+    },
+
+    save: function() {
+      var self = this;
+
+      if(this.saving) {
+        return false;
+      }
+
+      this.saving = true;
+
+      fs.writeFile(this.filePath, JSON.stringify(this.data), function(err) {
         if(err) {
           throw err;
         } else {
-          this.tables = JSON.parse(_.unpack(data));
+          self.saving = false;
         }
-      });
-    },
-  
-    save: function() {
-      fs.writeFile(this.filePath, _.pack(JSON.stringify(this.tables)), function(err) {
-        if(err) throw err;        
+
       });
     }
   };
@@ -180,10 +193,14 @@
   var Table = function(db, name) {
       this.db = db;
       this.name = name;
-      this.indexing = {};
+      this.indexing = { };
 
       if(this.db) {
-        _.extend(this, db.tables[name]);
+        _.extend(this, db.data[name]);
+      }
+
+      for(var i = 0; i < this.items.length; i++) {
+        this.indexing[this.items[i][0]] = this.items[i];
       }
 
     };
@@ -204,7 +221,7 @@
     insert: function(data) {
       var items = arguments;
 
-/*
+      /*
       if(!(data instanceof Array)) {
         items = [data];
       }
@@ -240,24 +257,32 @@
         }
       } else if(query instanceof Object) {
         var add = true;
-        for(var property in query) {
-          var keyIndex = this.table.keyToIndex[property];
-          if(this.table.items[i][keyIndex] !== query[property]) {
-            add = false;
-            break;
+        for(var i = 0, len = this.table.items.length; i < len; i++) {
+          for(var property in query) {
+            var keyIndex = this.table.keyToIndex[property];
+            if(this.table.items[i][keyIndex] !== query[property]) {
+              add = false;
+              break;
+            }
+          }
+
+          if(add) {
+            this.items.push(this.table.items[i]);
           }
         }
-
-        if(add) {
-          this.items.push(this.table.items[i]);
-        }
       } else {
-        this.items = [this.indexing[query]];
+        var item = this.table.indexing[query];
+        if(item) {
+          this.items = [item];
+        }
       }
 
       if(this.items.length) {
         if(this.single) {
-          this.result = _.unfold(this.items[0], this.table.structure);
+          if(this.items.length) {
+            console.log(this.items);
+            this.result = _.unfold(this.items[0], this.table.structure);
+          }
         } else {
           this.result = [];
           for(var i = 0; i < this.items.length; i++) {
@@ -287,5 +312,6 @@
   } else {
     module.exports = Memoria;
   }
+
 
 })();
