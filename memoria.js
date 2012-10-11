@@ -8,6 +8,17 @@
 
   var _ = {
 
+    benchmark: {
+      start: function() {
+        this.startTime = (new Date).getTime();
+      },
+
+      stop: function(text) {
+        return(new Date).getTime() - this.startTime;
+      }
+    },
+
+
     extend: function() {
       for(var i = 1; i < arguments.length; i++) {
         for(var j in arguments[i]) {
@@ -125,18 +136,22 @@
     };
 
   Memoria.databases = databases;
-  Memoria.saveInterval = 1000;
+  Memoria.saveInterval = 2000;
+  Memoria.benchmark = true;
 
   var Database = function(name, callback) {
-      this.data = { };
-      this.tables = { };
+      this.data = {};
+      this.tables = {};
 
       var self = this;
       this.filePath = name + ".memoria";
+      this.callback = callback;
 
       if(!BROWSER) {
         if(this.exists = fs.existsSync(this.filePath)) {
           this.open();
+        } else {
+          setTimeout(function() { callback(true); }, 100);
         }
 
         setInterval(function() {
@@ -166,19 +181,23 @@
     },
 
     open: function() {
-      var data = fs.readFileSync(this.filePath);
-      this.data = JSON.parse(data);
+      var self = this;
+      var buffer = fs.readFileSync(this.filePath);
+      require('zlib').inflate(buffer, function(err, data) {
+        self.data = JSON.parse(data);
+        self.callback(false);
+      });      
     },
 
     save: function() {
-      var self = this;
+      if(!this.updated) return false;
+      if(this.saving) return false;
 
-      if(this.saving) {
-        return false;
-      }
+      var self = this;      
 
       this.saving = true;
-
+      this.updated = false;
+/*
       fs.writeFile(this.filePath, JSON.stringify(this.data), function(err) {
         if(err) {
           throw err;
@@ -186,6 +205,13 @@
           self.saving = false;
         }
 
+      });*/
+
+      require('zlib').deflate(JSON.stringify(this.data), function(err, buffer) {
+        fs.writeFile(self.filePath, buffer, function(err) {
+          if(Memoria.benchmark) console.log("database saved");
+        });
+        self.saving = false;
       });
     }
   };
@@ -193,7 +219,7 @@
   var Table = function(db, name) {
       this.db = db;
       this.name = name;
-      this.indexing = { };
+      this.indexing = {};
 
       if(this.db) {
         _.extend(this, db.data[name]);
@@ -201,6 +227,13 @@
 
       for(var i = 0; i < this.items.length; i++) {
         this.indexing[this.items[i][0]] = this.items[i];
+      }
+
+
+      if(Memoria.benchmark) {
+        console.log("\n\n");
+        console.log("Memoria: table `" + name + "` length is " + this.items.length);
+        console.log("---------------------------------------------------");
       }
 
     };
@@ -220,6 +253,8 @@
 
     insert: function(data) {
       var items = arguments;
+
+      this.db.updated = true;
 
       /*
       if(!(data instanceof Array)) {
@@ -245,6 +280,8 @@
       this.result = null;
       this.items = [];
 
+      if(Memoria.benchmark) _.benchmark.start();
+
       if(!query || query instanceof Function) {
 
         for(var i = 0, len = this.table.items.length; i < len; i++) {
@@ -256,8 +293,8 @@
           }
         }
       } else if(query instanceof Object) {
-        var add = true;
         for(var i = 0, len = this.table.items.length; i < len; i++) {
+          var add = true;
           for(var property in query) {
             var keyIndex = this.table.keyToIndex[property];
             if(this.table.items[i][keyIndex] !== query[property]) {
@@ -280,7 +317,6 @@
       if(this.items.length) {
         if(this.single) {
           if(this.items.length) {
-            console.log(this.items);
             this.result = _.unfold(this.items[0], this.table.structure);
           }
         } else {
@@ -290,6 +326,19 @@
           }
         }
 
+      }
+
+      if(Memoria.benchmark) {
+        if(!query || query instanceof Function) {
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching " + (!query ? "*" : String(query).replace(/\n/g, " ")));
+        } else if(query instanceof Object) {
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching ", query);
+        } else {
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching ID=" + query);
+        }
+
+        console.log("results: ", this.items ? this.items.length : 0);
+        console.log("---------------------------------------------------");
       }
     };
 

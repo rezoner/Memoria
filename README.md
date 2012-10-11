@@ -16,18 +16,21 @@ It is meant to be used with applications that doesn't share database with other 
 
 ### Create database:
 
+    Memoria(name, onReady);
+
 Looks for file `test.memoria` to restore data.
 If file doesn't exists it will be created.
 
-    var db = Memoria("test");
+    var db = Memoria("test", function(exists) {
 
-It is possible to check if file was found using:
+        if(!exists) {
 
-    if(db.exists) {
-      
-      /* some creational functions */
+            /* some creational functions */    
 
-    }
+        }       
+
+    });
+
 
 ### Create table:
 
@@ -75,9 +78,7 @@ or
     db("users").all({ age: 32 }).update(
       function(r, i) {
       r[i.salary] *= 2;
-    });
-    
-    
+    });    
     
 ### Removing *not implemented*:
 
