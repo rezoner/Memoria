@@ -12,7 +12,8 @@ var benchmark = {
 Memoria = require("./memoria.js");
 
 db = Memoria("test", function(exists) {
-  if(exists) {
+  console.log("EXISTS", exists);
+  if(!exists) {
 
     /* create table */
 
@@ -37,7 +38,7 @@ db = Memoria("test", function(exists) {
       "age": 9,
       "salary": 2800
     }, {
-      "name": "jerev",
+      "name": "Hoppertje",
       "age": 65,
       "salary": 2400
     }, {
@@ -69,6 +70,7 @@ db = Memoria("test", function(exists) {
         salary: Math.random() * 10000 | 0
       });
     }
+
     console.log("DATABASE FILE DOESN'T EXIST");
     console.log("inserting ", count, "rows took", benchmark.stop() + "ms");
     console.log("---------------------------------------------------");
@@ -77,33 +79,35 @@ db = Memoria("test", function(exists) {
 
   /* update sallary by age */
 
-  db("users").all().update(function(r, i) {
-    r[i.salary] = r[i.age] * 100;
+  db("users").all().update(function(r) {
+    r.salary = r.age * 100;
   });
 
   /* get users with sallary > 1000 */
 
-  db("users").all(function(r, i) {
-    return r[i.salary] > 1000;
+  db("users").all(function(r) {
+    return r.salary > 1000;
   }).result;
 
-  /* Find Hinton */
+  /* Find Hoppertje */
 
   db("users").one({
-    name: "Hinton"
+    name: "Hoppertje"
   });
 
   var rc = db("users").all(function(r, i) {
     return Math.random() > 0.5;
   }).result;
 
-  db("users").one(function(r, i) {
-    return r[i.name] === "Vennril";
+  db("users").one(function(r) {
+    return r.name === "Vennril";
   });
 
   db("users").one({
     name: "FakenCziken"
   });
+
+  db("users").one(12000).remove();
 
   db("users").one(12000);
 

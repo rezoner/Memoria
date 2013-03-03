@@ -64,10 +64,9 @@ Function (flexible querries):
     /* get all items matching age > 32 */
 
     db("users").all(function(r, i) {
-      return r[i.age] > 32;
+      return r.age > 32;
     }).result; 
     
-Note that properties have to be accessed using additional array with indexes. It is not really convenient but gives a huge boost to performance.
 
 ### Updating:
 
@@ -80,6 +79,6 @@ or
       r[i.salary] *= 2;
     });    
     
-### Removing *not implemented*:
+### Removing:
 
     db("users").all(selector).remove();

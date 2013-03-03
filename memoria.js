@@ -25,29 +25,7 @@
           arguments[0][j] = arguments[i][j];
         }
       }
-    },
-
-    /* fold object using keys */
-
-    fold: function(data, keys) {
-      var result = [];
-      for(var i = 0; i < keys.length; i++) {
-        result[i] = data[keys[i]];
-      }
-
-      return result;
-    },
-
-    /* unfold object using keys */
-
-    unfold: function(data, keys) {
-      var result = {};
-      for(var i = 0; i < keys.length; i++) {
-        result[keys[i]] = data[i];
-      }
-
-      return result
-    },
+    },   
 
     inverse: function(keys) {
       var result = {};
@@ -58,54 +36,22 @@
       return result
     },
 
-    pack: function(s) {
-      var dict = {};
-      var data = (s + "").split("");
-      var out = [];
-      var currChar;
-      var phrase = data[0];
-      var code = 256;
-      for(var i = 1; i < data.length; i++) {
-        currChar = data[i];
-        if(dict[phrase + currChar] != null) {
-          phrase += currChar;
-        } else {
-          out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-          dict[phrase + currChar] = code;
-          code++;
-          phrase = currChar;
-        }
-      }
-      out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-      for(var i = 0; i < out.length; i++) {
-        out[i] = String.fromCharCode(out[i]);
-      }
-      return out.join("");
-    },
+    cleanArray: function(array, property) {
 
-    unpack: function(s) {
-      var dict = {};
-      var data = (s + "").split("");
-      var currChar = data[0];
-      var oldPhrase = currChar;
-      var out = [currChar];
-      var code = 256;
-      var phrase;
-      for(var i = 1; i < data.length; i++) {
-        var currCode = data[i].charCodeAt(0);
-        if(currCode < 256) {
-          phrase = data[i];
-        } else {
-          phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
+      var lastArgument = arguments[arguments.length - 1];
+      var isLastArgumentFunction = typeof lastArgument === "function";
+
+      for(var i = 0, len = array.length; i < len; i++) {
+        if(array[i] === null || (property && array[i][property])) {
+          if(isLastArgumentFunction) {
+            lastArgument(array[i]);
+          }
+          array.splice(i--, 1);
+          len--;
         }
-        out.push(phrase);
-        currChar = phrase.charAt(0);
-        dict[code] = oldPhrase + currChar;
-        code++;
-        oldPhrase = phrase;
       }
-      return out.join("");
     }
+
 
   };
 
@@ -151,7 +97,7 @@
         if(this.exists = fs.existsSync(this.filePath)) {
           this.open();
         } else {
-          setTimeout(function() { callback(true); }, 100);
+          setTimeout(function() { callback(false); }, 100);
         }
 
         setInterval(function() {
@@ -174,8 +120,6 @@
 
       this.data[name] = {
         autoincrement: 1,
-        structure: fields,
-        keyToIndex: _.inverse(fields),
         items: []
       }
     },
@@ -185,7 +129,7 @@
       var buffer = fs.readFileSync(this.filePath);
       require('zlib').inflate(buffer, function(err, data) {
         self.data = JSON.parse(data);
-        self.callback(false);
+        self.callback(true);
       });      
     },
 
@@ -197,15 +141,6 @@
 
       this.saving = true;
       this.updated = false;
-/*
-      fs.writeFile(this.filePath, JSON.stringify(this.data), function(err) {
-        if(err) {
-          throw err;
-        } else {
-          self.saving = false;
-        }
-
-      });*/
 
       require('zlib').deflate(JSON.stringify(this.data), function(err, buffer) {
         fs.writeFile(self.filePath, buffer, function(err) {
@@ -213,6 +148,7 @@
         });
         self.saving = false;
       });
+      
     }
   };
 
@@ -247,10 +183,6 @@
       return new Query(false, this, query);
     },
 
-    false: function(query) {
-      return new Query(true, this, query);
-    },
-
     insert: function(data) {
       var items = arguments;
 
@@ -265,12 +197,17 @@
       for(var i = 0; i < items.length; i++) {
         var id = this.autoincrement++;
         items[i].id = id;
-        var item = _.fold(items[i], this.structure);
+        var item = items[i];
 
         this.items.push(item);
         this.indexing[id] = item;
       }
+    },
+
+    clean: function() {
+      _.cleanArray(this.items, "_remove");
     }
+
   };
 
   var Query = function(single, table, query) {
@@ -285,19 +222,16 @@
       if(!query || query instanceof Function) {
 
         for(var i = 0, len = this.table.items.length; i < len; i++) {
-          if(!query || query(this.table.items[i], this.table.keyToIndex)) {
+          if(!query || query(this.table.items[i])) {
             this.items.push(this.table.items[i]);
-            if(this.single) {
-              break;
-            }
+            if(this.single) break;            
           }
         }
       } else if(query instanceof Object) {
         for(var i = 0, len = this.table.items.length; i < len; i++) {
           var add = true;
           for(var property in query) {
-            var keyIndex = this.table.keyToIndex[property];
-            if(this.table.items[i][keyIndex] !== query[property]) {
+            if(this.table.items[i] !== query[property]) {
               add = false;
               break;
             }
@@ -317,12 +251,12 @@
       if(this.items.length) {
         if(this.single) {
           if(this.items.length) {
-            this.result = _.unfold(this.items[0], this.table.structure);
+            this.result = this.items[0];
           }
         } else {
           this.result = [];
           for(var i = 0; i < this.items.length; i++) {
-            this.result.push(_.unfold(this.items[i], this.table.structure));
+            this.result.push(this.items[i]);
           }
         }
 
@@ -347,11 +281,19 @@
     update: function(what) {
       for(var i = 0; i < this.items.length; i++) {
         if(what instanceof Function) {
-          what(this.items[i], this.table.keyToIndex);
+          what(this.items[i]);
         } else {
           _.extend(this.items[i], what);
         }
       }
+    },
+
+    remove: function() {
+      console.log("REMOVE", this.items)
+      for(var i = 0; i < this.items.length; i++) {
+        this.items[i]._remove = true;
+      }
+      this.table.clean();
     }
 
   });
