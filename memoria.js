@@ -25,7 +25,7 @@
           arguments[0][j] = arguments[i][j];
         }
       }
-    },   
+    },     
 
     inverse: function(keys) {
       var result = {};
@@ -66,12 +66,8 @@
       var database = databases[name];
 
       var wrapper = (function(database) {
-        return function(name, args) {
-          if(typeof args !== "undefined") {
-            return database.setupTable(name, args);
-          } else {
-            return database.table(name);
-          }
+        return function(name) {
+          return database.collection(name);
         };
       })(database);
 
@@ -87,7 +83,7 @@
 
   var Database = function(name, callback) {
       this.data = {};
-      this.tables = {};
+      this.collections = {};
 
       var self = this;
       this.filePath = name + ".memoria";
@@ -108,20 +104,11 @@
 
   Database.prototype = {
 
-    table: function(name) {
-      if(!this.tables[name]) {
-        this.tables[name] = new Table(this, name);
+    collection: function(name) {
+      if(!this.collections[name]) {
+        this.collections[name] = new Collection(this, name);
       }
-      return this.tables[name];
-    },
-
-    setupTable: function(name, fields) {
-      fields.unshift("id");
-
-      this.data[name] = {
-        autoincrement: 1,
-        items: []
-      }
+      return this.collections[name];
     },
 
     open: function() {
@@ -152,29 +139,35 @@
     }
   };
 
-  var Table = function(db, name) {
+  var Collection = function(db, name) {
       this.db = db;
       this.name = name;
       this.indexing = {};
 
       if(this.db) {
+        if(!this.db.data[name]) {
+          this.db.data[name] = {
+            autoincrement: 1,
+            documents: []
+          }
+        }
+        
         _.extend(this, db.data[name]);
       }
 
-      for(var i = 0; i < this.items.length; i++) {
-        this.indexing[this.items[i][0]] = this.items[i];
+      for(var i = 0; i < this.documents.length; i++) {
+        this.indexing[this.documents[i][0]] = this.documents[i];
       }
-
 
       if(Memoria.benchmark) {
         console.log("\n\n");
-        console.log("Memoria: table `" + name + "` length is " + this.items.length);
+        console.log("Memoria: collection `" + name + "` length is " + this.documents.length);
         console.log("---------------------------------------------------");
       }
 
     };
 
-  Table.prototype = {
+  Collection.prototype = {
     one: function(query) {
       return new Query(true, this, query);
     },
@@ -184,79 +177,79 @@
     },
 
     insert: function(data) {
-      var items = arguments;
+      var documents = arguments;
 
       this.db.updated = true;
 
       /*
       if(!(data instanceof Array)) {
-        items = [data];
+        documents = [data];
       }
 */
 
-      for(var i = 0; i < items.length; i++) {
+      for(var i = 0; i < documents.length; i++) {
         var id = this.autoincrement++;
-        items[i].id = id;
-        var item = items[i];
+        documents[i].id = id;
+        var document = documents[i];
 
-        this.items.push(item);
-        this.indexing[id] = item;
+        this.documents.push(document);
+        this.indexing[id] = document;
       }
     },
 
     clean: function() {
-      _.cleanArray(this.items, "_remove");
+      _.cleanArray(this.documents, "_remove");
     }
 
   };
 
-  var Query = function(single, table, query) {
+  var Query = function(single, collection, query) {
       this.single = single
 
-      this.table = table;
+      this.collection = collection;
       this.result = null;
-      this.items = [];
+      this.documents = [];
 
       if(Memoria.benchmark) _.benchmark.start();
 
       if(!query || query instanceof Function) {
 
-        for(var i = 0, len = this.table.items.length; i < len; i++) {
-          if(!query || query(this.table.items[i])) {
-            this.items.push(this.table.items[i]);
+        for(var i = 0, len = this.collection.documents.length; i < len; i++) {
+          if(!query || query(this.collection.documents[i])) {
+            this.documents.push(this.collection.documents[i]);
             if(this.single) break;            
           }
         }
       } else if(query instanceof Object) {
-        for(var i = 0, len = this.table.items.length; i < len; i++) {
+        for(var i = 0, len = this.collection.documents.length; i < len; i++) {
           var add = true;
           for(var property in query) {
-            if(this.table.items[i] !== query[property]) {
+            if(this.collection.documents[i] !== query[property]) {
               add = false;
               break;
             }
           }
 
           if(add) {
-            this.items.push(this.table.items[i]);
+            this.documents.push(this.collection.documents[i]);
           }
         }
       } else {
-        var item = this.table.indexing[query];
-        if(item) {
-          this.items = [item];
+        var document = this.collection.indexing[query];
+        if(document) {
+          this.documents = [document];
         }
       }
 
-      if(this.items.length) {
+      if(this.documents.length) {
         if(this.single) {
-          if(this.items.length) {
-            this.result = this.items[0];
+          if(this.documents.length) {
+            this.result = this.documents[0];
           }
         } else {
           this.result = [];
-          for(var i = 0; i < this.items.length; i++) {
-            this.result.push(this.items[i]);
+          for(var i = 0; i < this.documents.length; i++) {
+            this.result.push(this.documents[i]);
           }
         }
 
@@ -264,14 +257,14 @@
 
       if(Memoria.benchmark) {
         if(!query || query instanceof Function) {
-          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching " + (!query ? "*" : String(query).replace(/\n/g, " ")));
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.collection.name + " matching " + (!query ? "*" : String(query).replace(/\n/g, " ")));
         } else if(query instanceof Object) {
-          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching ", query);
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.collection.name + " matching ", query);
         } else {
-          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.table.name + " matching ID=" + query);
+          console.log(_.benchmark.stop() + " ms | selecting " + (single ? "one" : "all") + " from " + this.collection.name + " matching ID=" + query);
         }
 
-        console.log("results: ", this.items ? this.items.length : 0);
+        console.log("results: ", this.documents ? this.documents.length : 0);
         console.log("---------------------------------------------------");
       }
     };
@@ -279,21 +272,21 @@
   _.extend(Query.prototype, {
 
     update: function(what) {
-      for(var i = 0; i < this.items.length; i++) {
+      for(var i = 0; i < this.documents.length; i++) {
         if(what instanceof Function) {
-          what(this.items[i]);
+          what(this.documents[i]);
         } else {
-          _.extend(this.items[i], what);
+          _.extend(this.documents[i], what);
         }
       }
     },
 
     remove: function() {
-      console.log("REMOVE", this.items)
-      for(var i = 0; i < this.items.length; i++) {
-        this.items[i]._remove = true;
+      console.log("REMOVE", this.documents)
+      for(var i = 0; i < this.documents.length; i++) {
+        this.documents[i]._remove = true;
       }
-      this.table.clean();
+      this.collection.clean();
     }
 
   });

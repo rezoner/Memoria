@@ -32,9 +32,10 @@ If file doesn't exists it will be created.
     });
 
 
-### Create table:
+### Create collection:
 
-    db("users", ["name", "age", "salary"]);
+    /* just use it - collection will be created on the fly */
+    db("users");
 
 ### Insertion:
 
@@ -63,7 +64,7 @@ Function (flexible querries):
 
     /* get all items matching age > 32 */
 
-    db("users").all(function(r, i) {
+    db("users").all(function(r) {
       return r.age > 32;
     }).result; 
     
@@ -75,8 +76,8 @@ Function (flexible querries):
 or
 
     db("users").all({ age: 32 }).update(
-      function(r, i) {
-      r[i.salary] *= 2;
+      function(r) {
+        r.salary *= 2;
     });    
     
 ### Removing:
